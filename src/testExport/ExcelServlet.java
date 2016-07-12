@@ -20,7 +20,7 @@ public class ExcelServlet extends HttpServlet {
 		String str = "a.xls";
 		// String path =
 		// request.getSession().getServletContext().getRealPath(str);
-		download("E://a.xls", response);
+		//download("E://a.xls", response);
 	}
 
 	private void download(String path, HttpServletResponse response) {
