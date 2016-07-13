@@ -7,6 +7,9 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -230,17 +233,24 @@ public class ExportExcel<T> {
 		}
 	}
 
-	public void exportExcel() {
+	public void exportExcel() throws SQLException {
 		
 		Workbook wb = new SXSSFWorkbook(100);
 		Sheet sh = wb.createSheet();
-		for(int rownum = 0; rownum < 100000; rownum++){
-			 Row row = sh.createRow(rownum); 
-			 for(int cellnum = 0; cellnum < 10; cellnum++){ 
-			 Cell cell = row.createCell(cellnum); 
-			 String address = new CellReference(cell).formatAsString(); 
-			 cell.setCellValue(address); } 
-			 }
+		//sh.autoSizeColumn(1);
+		DataGenerator dg = new DataGenerator();
+		ResultSet rs = dg.getDataFromDB();
+		ResultSetMetaData m=rs.getMetaData();
+		while(rs.next()){
+			int columns=m.getColumnCount();
+			Row row = sh.createRow(rs.getRow()-1);
+			 for(int i = 0; i < columns; i++){ 
+			 Cell cell = row.createCell(i); 
+			 String value = rs.getString(i+1);
+			 cell.setCellValue(value); 
+			 } 
+		}
+
 		try {
 			FileOutputStream out = new FileOutputStream("E://a.xlsx");
 			wb.write(out);
@@ -275,6 +285,16 @@ public class ExportExcel<T> {
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
-		exportExcel(); 
+		try {
+			long startTime=System.currentTimeMillis();
+			
+			exportExcel();
+			long endTime=System.currentTimeMillis();
+			long runTime=endTime-startTime;
+			System.out.println("导出成功,运行了"+runTime+"ms");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 	}
 }
